@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Mosque;
+
 
 class MosqueOnboardingController extends Controller
 {
@@ -138,11 +140,15 @@ class MosqueOnboardingController extends Controller
     }
 
     // 6) Submit Verification
-    public function submitVerification(Request $request)
+        public function submitVerification(Request $request)
     {
         $mosque = $this->currentMosque($request);
 
-        // Minimal check agar terasa “real”
+        $request->validate([
+            'waqf_imb_document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'management_decree_document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+        ]);
+
         if (!$mosque->slug || !$mosque->template_code) {
             return response()->json([
                 'success' => false,
@@ -150,25 +156,34 @@ class MosqueOnboardingController extends Controller
             ], 422);
         }
 
-        if (!$mosque->terms_accepted_at) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda harus menyetujui syarat & ketentuan terlebih dahulu.',
-            ], 422);
+        if ($mosque->waqf_imb_document_path) { 
+            Storage::disk('public')->delete($mosque->waqf_imb_document_path);
         }
 
+        if ($mosque->management_decree_document_path) {
+            Storage::disk('public')->delete($mosque->management_decree_document_path);
+        }
+
+        $waqfImbPath = $request->file('waqf_imb_document')
+            ->store('mosques/verifications', 'public');
+
+        $managementDecreePath = $request->file('management_decree_document')
+            ->store('mosques/verifications', 'public');
+
+        $mosque->waqf_imb_document_path = $waqfImbPath;
+        $mosque->management_decree_document_path = $managementDecreePath;
         $mosque->verification_status = 'submitted';
         $mosque->verification_submitted_at = now();
         $mosque->verification_note = null;
         $mosque->save();
 
-        // Catatan: pengiriman email bisa menyusul (opsional untuk deadline).
-        // Untuk demo UAS, cukup tunjukkan status berubah menjadi "submitted".
-
         return response()->json([
             'success' => true,
-            'message' => 'Verifikasi berhasil diajukan.',
+            'message' => 'Dokumen verifikasi berhasil diajukan.',
             'data' => [
+                'verification_status' => $mosque->verification_status,
+                'waqf_imb_document_url' => Storage::disk('public')->url($waqfImbPath),
+                'management_decree_document_url' => Storage::disk('public')->url($managementDecreePath),
                 'mosque' => $mosque,
             ],
         ]);

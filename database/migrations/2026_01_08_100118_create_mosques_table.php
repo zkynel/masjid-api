@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->string('logo_path')->nullable();
 
             // Template
-            $table->string('template_code')->nullable(); // mis: "TEMPLATE_A"
+            $table->string('template_code')->nullable(); 
 
             // Onboarding & Verifikasi
             $table->enum('verification_status', ['draft', 'submitted', 'verified', 'rejected'])->default('draft');

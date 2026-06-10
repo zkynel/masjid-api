@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\PublicController;
 use App\Http\Controllers\Api\V1\MosqueOnboardingController;
 use App\Http\Controllers\Api\V1\MosqueProfileController;
+use App\Http\Controllers\Api\V1\PrayerScheduleController;
+use App\Http\Controllers\Api\V1\RegionController;
 
 Route::prefix('v1')->group(function () {
 
@@ -20,9 +22,14 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // PUBLIC (tanpa token)
+    // PUBLIC
     Route::get('/public/{slug}/posts', [PublicController::class, 'postsBySlug']);
+    Route::get('/public/{slug}/posts/{postSlug}', [PublicController::class, 'postDetailBySlug']);
     Route::get('/public/{slug}/profile', [PublicController::class, 'profileBySlug']);
+            
+    Route::get('/public/{slug}/prayer/provinces', [PrayerScheduleController::class, 'provinces']);
+    Route::post('/public/{slug}/prayer/cities', [PrayerScheduleController::class, 'cities']);
+    Route::post('/public/{slug}/prayer/schedule', [PrayerScheduleController::class, 'schedule']);
 
     // PROTECTED
     Route::middleware('auth:sanctum')->group(function () {
@@ -55,6 +62,13 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/mosques/{slug}/posts/{postId}/publish', [PostController::class, 'publish']);
         Route::post('/mosques/{slug}/posts/{postId}/unpublish', [PostController::class, 'unpublish']);
+    });
+
+        Route::prefix('regions')->group(function () {
+        Route::get('/provinces', [RegionController::class, 'provinces']);
+        Route::get('/regencies/{provinceId}', [RegionController::class, 'regencies']);
+        Route::get('/districts/{regencyId}', [RegionController::class, 'districts']);
+        Route::get('/villages/{districtId}', [RegionController::class, 'villages']);
     });
 
 });

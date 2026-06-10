@@ -29,12 +29,12 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        // 2) Buat masjid default untuk user (multi-masjid langsung kebukti)
+        // 2) Buat masjid default untuk user (mu    lti-masjid langsung kebukti)
         $slug = 'masjid-' . $user->id;
 
         $mosque = Mosque::create([
             'name' => 'Masjid Default',
-            'slug' => $slug,
+            'slug' => $slug,    
             'address' => null,
             'description' => null,
             'contact' => null,
@@ -76,7 +76,7 @@ class AuthController extends Controller
         }
 
         // Opsional: hapus token lama biar rapi (1 user = 1 token aktif)
-        $user->tokens()->delete();
+        $user->tokens()->delete();  
 
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -122,7 +122,7 @@ class AuthController extends Controller
             'data' => [
                 'user' => $user,
                 'mosque' => $mosque,
-            ],
+            ],  
         ]);
     }
 }

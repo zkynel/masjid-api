@@ -40,7 +40,7 @@ class MosqueProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $slug)
+        public function update(Request $request, string $slug)
     {
         $mosque = $this->getMosqueOrFail($request, $slug);
 
@@ -48,7 +48,15 @@ class MosqueProfileController extends Controller
             'name' => ['nullable', 'string', 'max:120'],
             'address' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+
+            'province' => ['nullable', 'string', 'max:120'],
+            'city' => ['nullable', 'string', 'max:120'],
+            'district' => ['nullable', 'string', 'max:120'],
+            'sub_district' => ['nullable', 'string', 'max:120'],
+            'postal' => ['nullable', 'string', 'max:20'],
+
             'contact' => ['nullable', 'string', 'max:120'],
+            'email' => ['nullable', 'email', 'max:150'],
         ]);
 
         $mosque->fill(array_filter($validated, fn($v) => $v !== null));
