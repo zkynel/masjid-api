@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -47,11 +48,18 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Cek apakah user adalah Super Admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
     public function mosques()
     {
         return $this->belongsToMany(Mosque::class)
             ->withPivot('role_in_mosque')
             ->withTimestamps();
     }
-
 }

@@ -28,6 +28,7 @@ class Mosque extends Model
         'verification_submitted_at',
         'verified_at',
         'verification_note',
+        'verified_by',
         'terms_accepted_at',
     ];
 
@@ -47,5 +48,13 @@ class Mosque extends Model
     public function posts()
     {
         return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Super Admin yang melakukan approve/reject.
+     */
+    public function verifiedByAdmin()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }

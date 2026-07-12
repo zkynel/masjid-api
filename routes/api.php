@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\V1\MosqueProfileController;
 use App\Http\Controllers\Api\V1\PrayerScheduleController;
 use App\Http\Controllers\Api\V1\RegionController;
 
+use App\Http\Controllers\Api\V1\AdminVerificationController;
+
 Route::prefix('v1')->group(function () {
 
     // AUTH
@@ -64,7 +66,16 @@ Route::prefix('v1')->group(function () {
         Route::post('/mosques/{slug}/posts/{postId}/unpublish', [PostController::class, 'unpublish']);
     });
 
-        Route::prefix('regions')->group(function () {
+    // SUPER ADMIN (protected + role check)
+    Route::middleware(['auth:sanctum', 'super_admin'])->prefix('admin')->group(function () {
+        Route::get('/dashboard', [AdminVerificationController::class, 'dashboard']);
+        Route::get('/verifications', [AdminVerificationController::class, 'index']);
+        Route::get('/verifications/{mosqueId}', [AdminVerificationController::class, 'show']);
+        Route::post('/verifications/{mosqueId}/approve', [AdminVerificationController::class, 'approve']);
+        Route::post('/verifications/{mosqueId}/reject', [AdminVerificationController::class, 'reject']);
+    });
+
+    Route::prefix('regions')->group(function () {
         Route::get('/provinces', [RegionController::class, 'provinces']);
         Route::get('/regencies/{provinceId}', [RegionController::class, 'regencies']);
         Route::get('/districts/{regencyId}', [RegionController::class, 'districts']);
@@ -72,3 +83,4 @@ Route::prefix('v1')->group(function () {
     });
 
 });
+
