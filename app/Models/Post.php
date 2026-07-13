@@ -19,6 +19,18 @@ class Post extends Model
         'cover_image_path',
         'status',
         'published_at',
+        // Kajian
+        'event_date',
+        'event_time',
+        'speaker',
+        'location',
+        // Artikel
+        'author',
+        'category',
+        'article_date',
+        'excerpt',
+        // Program
+        'target_url',
     ];
 
     protected $casts = [

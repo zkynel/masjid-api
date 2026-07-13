@@ -68,6 +68,18 @@ class PostController extends Controller
             'title' => ['required', 'string', 'max:200'],
             'content' => ['nullable', 'string'],
             'cover_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            // Kajian
+            'event_date' => ['nullable', 'date'],
+            'event_time' => ['nullable'],
+            'speaker' => ['nullable', 'string', 'max:255'],
+            'location' => ['nullable', 'string', 'max:255'],
+            // Artikel
+            'author' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:255'],
+            'article_date' => ['nullable', 'date'],
+            'excerpt' => ['nullable', 'string'],
+            // Program
+            'target_url' => ['nullable', 'url', 'max:255'],
         ]);
 
         $postSlug = Str::slug($validated['title']);
@@ -94,6 +106,18 @@ class PostController extends Controller
             'content' => $validated['content'] ?? null,
             'cover_image_path' => $coverPath,
             'status' => 'draft',
+            // Kajian
+            'event_date' => $validated['event_date'] ?? null,
+            'event_time' => $validated['event_time'] ?? null,
+            'speaker' => $validated['speaker'] ?? null,
+            'location' => $validated['location'] ?? null,
+            // Artikel
+            'author' => $validated['author'] ?? null,
+            'category' => $validated['category'] ?? null,
+            'article_date' => $validated['article_date'] ?? null,
+            'excerpt' => $validated['excerpt'] ?? null,
+            // Program
+            'target_url' => $validated['target_url'] ?? null,
         ]);
 
         return response()->json([
@@ -116,6 +140,18 @@ class PostController extends Controller
             'title' => ['nullable', 'string', 'max:200'],
             'content' => ['nullable', 'string'],
             'cover_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            // Kajian
+            'event_date' => ['nullable', 'date'],
+            'event_time' => ['nullable'],
+            'speaker' => ['nullable', 'string', 'max:255'],
+            'location' => ['nullable', 'string', 'max:255'],
+            // Artikel
+            'author' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:255'],
+            'article_date' => ['nullable', 'date'],
+            'excerpt' => ['nullable', 'string'],
+            // Program
+            'target_url' => ['nullable', 'url', 'max:255'],
         ]);
 
         if (isset($validated['title']) && $validated['title'] !== $post->title) {
@@ -145,6 +181,18 @@ class PostController extends Controller
             'type' => $validated['type'] ?? $post->type,
             'title' => $validated['title'] ?? $post->title,
             'content' => array_key_exists('content', $validated) ? $validated['content'] : $post->content,
+            // Kajian
+            'event_date' => array_key_exists('event_date', $validated) ? $validated['event_date'] : $post->event_date,
+            'event_time' => array_key_exists('event_time', $validated) ? $validated['event_time'] : $post->event_time,
+            'speaker' => array_key_exists('speaker', $validated) ? $validated['speaker'] : $post->speaker,
+            'location' => array_key_exists('location', $validated) ? $validated['location'] : $post->location,
+            // Artikel
+            'author' => array_key_exists('author', $validated) ? $validated['author'] : $post->author,
+            'category' => array_key_exists('category', $validated) ? $validated['category'] : $post->category,
+            'article_date' => array_key_exists('article_date', $validated) ? $validated['article_date'] : $post->article_date,
+            'excerpt' => array_key_exists('excerpt', $validated) ? $validated['excerpt'] : $post->excerpt,
+            // Program
+            'target_url' => array_key_exists('target_url', $validated) ? $validated['target_url'] : $post->target_url,
         ]);
 
         $post->save();
