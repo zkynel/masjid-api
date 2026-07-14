@@ -64,7 +64,7 @@ class PostController extends Controller
         $mosque = $this->getMosqueOrFail($request, $slug);
 
         $validated = $request->validate([
-            'type' => ['required', 'in:berita,pengumuman,kegiatan,halaman'],
+            'type' => ['required', 'in:berita,pengumuman,kegiatan,halaman,gallery'],
             'title' => ['required', 'string', 'max:200'],
             'content' => ['nullable', 'string'],
             'cover_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -80,6 +80,9 @@ class PostController extends Controller
             'excerpt' => ['nullable', 'string'],
             // Program
             'target_url' => ['nullable', 'url', 'max:255'],
+            // Gallery
+            'gallery_images' => ['nullable', 'array'],
+            'gallery_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
         $postSlug = Str::slug($validated['title']);
@@ -96,6 +99,14 @@ class PostController extends Controller
 
         if ($request->hasFile('cover_image')) {
             $coverPath = $request->file('cover_image')->store('posts/covers', 'public');
+        }
+
+        // Upload gallery images
+        $galleryPaths = [];
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $image) {
+                $galleryPaths[] = $image->store('gallery', 'public');
+            }
         }
 
         $post = Post::create([
@@ -118,6 +129,8 @@ class PostController extends Controller
             'excerpt' => $validated['excerpt'] ?? null,
             // Program
             'target_url' => $validated['target_url'] ?? null,
+            // Gallery
+            'gallery_images' => !empty($galleryPaths) ? $galleryPaths : null,
         ]);
 
         return response()->json([
@@ -136,7 +149,7 @@ class PostController extends Controller
         $post = $mosque->posts()->where('id', $postId)->firstOrFail();
 
         $validated = $request->validate([
-            'type' => ['nullable', 'in:berita,pengumuman,kegiatan,halaman'],
+            'type' => ['nullable', 'in:berita,pengumuman,kegiatan,halaman,gallery'],
             'title' => ['nullable', 'string', 'max:200'],
             'content' => ['nullable', 'string'],
             'cover_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -152,6 +165,9 @@ class PostController extends Controller
             'excerpt' => ['nullable', 'string'],
             // Program
             'target_url' => ['nullable', 'url', 'max:255'],
+            // Gallery
+            'gallery_images' => ['nullable', 'array'],
+            'gallery_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
         if (isset($validated['title']) && $validated['title'] !== $post->title) {
@@ -194,6 +210,15 @@ class PostController extends Controller
             // Program
             'target_url' => array_key_exists('target_url', $validated) ? $validated['target_url'] : $post->target_url,
         ]);
+
+        // Upload gallery images (append ke existing)
+        if ($request->hasFile('gallery_images')) {
+            $existingImages = $post->gallery_images ?? [];
+            foreach ($request->file('gallery_images') as $image) {
+                $existingImages[] = $image->store('gallery', 'public');
+            }
+            $post->gallery_images = $existingImages;
+        }
 
         $post->save();
 
@@ -262,5 +287,77 @@ class PostController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Tambah gambar ke galeri yang sudah ada.
+     * POST /api/v1/mosques/{slug}/posts/{postId}/gallery
+     */
+    public function addGalleryImages(Request $request, string $slug, int $postId)
+    {
+        $mosque = $this->getMosqueOrFail($request, $slug);
+        $post = $mosque->posts()->where('id', $postId)->firstOrFail();
+
+        $request->validate([
+            'gallery_images' => ['required', 'array'],
+            'gallery_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ]);
+
+        $existingImages = $post->gallery_images ?? [];
+
+        foreach ($request->file('gallery_images') as $image) {
+            $existingImages[] = $image->store('gallery', 'public');
+        }
+
+        $post->gallery_images = $existingImages;
+        $post->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Gambar berhasil ditambahkan ke galeri.',
+            'data' => [
+                'post' => $post,
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus satu gambar dari galeri.
+     * DELETE /api/v1/mosques/{slug}/posts/{postId}/gallery
+     */
+    public function removeGalleryImage(Request $request, string $slug, int $postId)
+    {
+        $mosque = $this->getMosqueOrFail($request, $slug);
+        $post = $mosque->posts()->where('id', $postId)->firstOrFail();
+
+        $request->validate([
+            'image' => ['required', 'string'],
+        ]);
+
+        $imagePath = $request->image;
+        $existingImages = $post->gallery_images ?? [];
+
+        if (!in_array($imagePath, $existingImages)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gambar tidak ditemukan di galeri.',
+            ], 404);
+        }
+
+        // Hapus file dari storage
+        Storage::disk('public')->delete($imagePath);
+
+        // Hapus dari array dan re-index
+        $existingImages = array_values(array_filter($existingImages, fn($img) => $img !== $imagePath));
+
+        $post->gallery_images = !empty($existingImages) ? $existingImages : null;
+        $post->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Gambar berhasil dihapus dari galeri.',
+            'data' => [
+                'post' => $post,
+            ],
+        ]);
+    }
 }
-    

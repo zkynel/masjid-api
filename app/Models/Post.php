@@ -31,10 +31,13 @@ class Post extends Model
         'excerpt',
         // Program
         'target_url',
+        // Gallery
+        'gallery_images',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
+        'gallery_images' => 'array',
     ];
 
     protected $appends = [

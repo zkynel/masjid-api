@@ -54,6 +54,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/mosques/{slug}/profile', [MosqueProfileController::class, 'show']);
         Route::put('/mosques/{slug}/profile', [MosqueProfileController::class, 'update']);
         Route::post('/mosques/{slug}/documents', [MosqueProfileController::class, 'uploadDocuments']);
+        Route::post('/mosques/{slug}/profile-image', [MosqueProfileController::class, 'uploadProfileImage']);
+        Route::delete('/mosques/{slug}/profile-image', [MosqueProfileController::class, 'deleteProfileImage']);
 
         // POSTS (by mosque slug)
         Route::get('/mosques/{slug}/posts', [PostController::class, 'index']);
@@ -64,6 +66,8 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/mosques/{slug}/posts/{postId}/publish', [PostController::class, 'publish']);
         Route::post('/mosques/{slug}/posts/{postId}/unpublish', [PostController::class, 'unpublish']);
+        Route::post('/mosques/{slug}/posts/{postId}/gallery', [PostController::class, 'addGalleryImages']);
+        Route::delete('/mosques/{slug}/posts/{postId}/gallery', [PostController::class, 'removeGalleryImage']);
     });
 
     // SUPER ADMIN (protected + role check)

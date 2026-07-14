@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Mosque extends Model
 {
@@ -23,6 +24,7 @@ class Mosque extends Model
         'contact',
         'email',
         'logo_path',
+        'profile_image',
         'template_code',
         'verification_status',
         'verification_submitted_at',
@@ -37,6 +39,17 @@ class Mosque extends Model
         'verified_at' => 'datetime',
         'terms_accepted_at' => 'datetime',
     ];
+
+    protected $appends = [
+        'profile_image_url',
+    ];
+
+    public function getProfileImageUrlAttribute()
+    {
+        return $this->profile_image
+            ? Storage::disk('public')->url($this->profile_image)
+            : null;
+    }
 
     public function users()
     {

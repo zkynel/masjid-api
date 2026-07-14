@@ -99,4 +99,59 @@ class MosqueProfileController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Upload foto profil masjid.
+     * POST /api/v1/mosques/{slug}/profile-image
+     */
+    public function uploadProfileImage(Request $request, string $slug)
+    {
+        $mosque = $this->getMosqueOrFail($request, $slug);
+
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        // Hapus file lama jika ada
+        if ($mosque->profile_image) {
+            Storage::disk('public')->delete($mosque->profile_image);
+        }
+
+        $path = $request->file('image')->store('mosques/profile', 'public');
+
+        $mosque->profile_image = $path;
+        $mosque->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile image uploaded successfully.',
+            'data' => [
+                'profile_image' => $path,
+                'profile_image_url' => Storage::disk('public')->url($path),
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus foto profil masjid.
+     * DELETE /api/v1/mosques/{slug}/profile-image
+     */
+    public function deleteProfileImage(Request $request, string $slug)
+    {
+        $mosque = $this->getMosqueOrFail($request, $slug);
+
+        if ($mosque->profile_image) {
+            Storage::disk('public')->delete($mosque->profile_image);
+        }
+
+        $mosque->profile_image = null;
+        $mosque->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile image deleted successfully.',
+            'data' => null,
+        ]);
+    }
 }
+
