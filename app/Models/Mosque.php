@@ -25,6 +25,7 @@ class Mosque extends Model
         'email',
         'logo_path',
         'profile_image',
+        'site_settings',
         'template_code',
         'verification_status',
         'verification_submitted_at',
@@ -38,6 +39,7 @@ class Mosque extends Model
         'verification_submitted_at' => 'datetime',
         'verified_at' => 'datetime',
         'terms_accepted_at' => 'datetime',
+        'site_settings' => 'array',
     ];
 
     protected $appends = [
