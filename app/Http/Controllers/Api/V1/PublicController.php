@@ -80,6 +80,7 @@ class PublicController extends Controller
                     'email' => $mosque->email,
                     'logo_path' => $mosque->logo_path,
                     'template_code' => $mosque->template_code,
+                    'site_settings' => $mosque->site_settings,
                 ],
             ],
         ]);

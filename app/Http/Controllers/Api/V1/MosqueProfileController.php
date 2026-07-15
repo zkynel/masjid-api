@@ -57,9 +57,17 @@ class MosqueProfileController extends Controller
 
             'contact' => ['nullable', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:150'],
+            'site_settings' => ['nullable', 'array'],
         ]);
 
         $mosque->fill(array_filter($validated, fn($v) => $v !== null));
+
+        // site_settings perlu di-handle terpisah karena array_filter !== null
+        // tidak akan menyimpan null (jika user ingin mengosongkan)
+        if ($request->has('site_settings')) {
+            $mosque->site_settings = $validated['site_settings'] ?? null;
+        }
+
         $mosque->save();
 
         return response()->json([
