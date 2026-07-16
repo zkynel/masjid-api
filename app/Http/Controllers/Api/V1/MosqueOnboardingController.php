@@ -145,8 +145,8 @@ class MosqueOnboardingController extends Controller
         $mosque = $this->currentMosque($request);
 
         $request->validate([
-            'waqf_imb_document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'management_decree_document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'waqf_imb_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'management_decree_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
         if (!$mosque->slug || !$mosque->template_code) {
@@ -156,22 +156,24 @@ class MosqueOnboardingController extends Controller
             ], 422);
         }
 
-        if ($mosque->waqf_imb_document_path) { 
-            Storage::disk('public')->delete($mosque->waqf_imb_document_path);
+        // Upload dokumen wakaf/IMB jika disertakan
+        if ($request->hasFile('waqf_imb_document')) {
+            if ($mosque->waqf_imb_document_path) {
+                Storage::disk('public')->delete($mosque->waqf_imb_document_path);
+            }
+            $mosque->waqf_imb_document_path = $request->file('waqf_imb_document')
+                ->store('mosques/verifications', 'public');
         }
 
-        if ($mosque->management_decree_document_path) {
-            Storage::disk('public')->delete($mosque->management_decree_document_path);
+        // Upload SK kepengurusan jika disertakan
+        if ($request->hasFile('management_decree_document')) {
+            if ($mosque->management_decree_document_path) {
+                Storage::disk('public')->delete($mosque->management_decree_document_path);
+            }
+            $mosque->management_decree_document_path = $request->file('management_decree_document')
+                ->store('mosques/verifications', 'public');
         }
 
-        $waqfImbPath = $request->file('waqf_imb_document')
-            ->store('mosques/verifications', 'public');
-
-        $managementDecreePath = $request->file('management_decree_document')
-            ->store('mosques/verifications', 'public');
-
-        $mosque->waqf_imb_document_path = $waqfImbPath;
-        $mosque->management_decree_document_path = $managementDecreePath;
         $mosque->verification_status = 'submitted';
         $mosque->verification_submitted_at = now();
         $mosque->verification_note = null;
@@ -179,11 +181,15 @@ class MosqueOnboardingController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Dokumen verifikasi berhasil diajukan.',
+            'message' => 'Verifikasi berhasil diajukan.',
             'data' => [
                 'verification_status' => $mosque->verification_status,
-                'waqf_imb_document_url' => Storage::disk('public')->url($waqfImbPath),
-                'management_decree_document_url' => Storage::disk('public')->url($managementDecreePath),
+                'waqf_imb_document_url' => $mosque->waqf_imb_document_path
+                    ? Storage::disk('public')->url($mosque->waqf_imb_document_path)
+                    : null,
+                'management_decree_document_url' => $mosque->management_decree_document_path
+                    ? Storage::disk('public')->url($mosque->management_decree_document_path)
+                    : null,
                 'mosque' => $mosque,
             ],
         ]);
